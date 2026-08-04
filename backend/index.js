@@ -10,8 +10,10 @@ import dotenv from "dotenv";
 // Import our MongoDB connection function.
 import connectDB from "./config/db.js";
 
+// Import resident routes for resident API operations.
+import residentRoutes from "./routes/residentRoutes.js";
+
 // Load environment variables from the .env file.
-// This must happen before we try to use MONGODB_URI.
 dotenv.config();
 
 // Connect the application to MongoDB Atlas.
@@ -24,23 +26,23 @@ const app = express();
 // Otherwise, use port 5000 during local development.
 const PORT = process.env.PORT || 5000;
 
-// Middleware that allows the React frontend
-// to communicate with the Express backend.
+// Allow requests from the React frontend.
 app.use(cors());
 
-// Middleware that allows Express to read JSON
-// data sent in the body of incoming requests.
+// Allow Express to read JSON request bodies.
 app.use(express.json());
 
-// Test route.
-// This confirms that our backend API is running correctly.
+// Use resident routes for all requests starting with /api/residents.
+app.use("/api/residents", residentRoutes);
+
+// Test route to confirm that the backend API is running.
 app.get("/", (req, res) => {
   res.json({
     message: "Shelter Wellness Check Management System API is running",
   });
 });
 
-// Start the Express server and listen for requests.
+// Start the Express server.
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
