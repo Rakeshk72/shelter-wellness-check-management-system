@@ -7,8 +7,12 @@ import Resident from "../models/Resident.js";
 // Create an Express router.
 const router = express.Router();
 
+
+// ========================================
 // GET /api/residents
-// Get all residents from the MongoDB database.
+// READ all residents
+// ========================================
+
 router.get("/", async (req, res) => {
   try {
     const residents = await Resident.find();
@@ -22,8 +26,37 @@ router.get("/", async (req, res) => {
   }
 });
 
+
+// ========================================
+// GET /api/residents/:id
+// READ one resident
+// ========================================
+
+router.get("/:id", async (req, res) => {
+  try {
+    const resident = await Resident.findById(req.params.id);
+
+    if (!resident) {
+      return res.status(404).json({
+        message: "Resident not found",
+      });
+    }
+
+    res.status(200).json(resident);
+  } catch (error) {
+    res.status(400).json({
+      message: "Unable to retrieve resident",
+      error: error.message,
+    });
+  }
+});
+
+
+// ========================================
 // POST /api/residents
-// Create and save a new resident in MongoDB.
+// CREATE a resident
+// ========================================
+
 router.post("/", async (req, res) => {
   try {
     const resident = await Resident.create(req.body);
@@ -37,5 +70,66 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Export the router so it can be used in index.js.
+
+// ========================================
+// PUT /api/residents/:id
+// UPDATE a resident
+// ========================================
+
+router.put("/:id", async (req, res) => {
+  try {
+    const resident = await Resident.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!resident) {
+      return res.status(404).json({
+        message: "Resident not found",
+      });
+    }
+
+    res.status(200).json(resident);
+  } catch (error) {
+    res.status(400).json({
+      message: "Unable to update resident",
+      error: error.message,
+    });
+  }
+});
+
+
+// ========================================
+// DELETE /api/residents/:id
+// DELETE a resident
+// ========================================
+
+router.delete("/:id", async (req, res) => {
+  try {
+    const resident = await Resident.findByIdAndDelete(req.params.id);
+
+    if (!resident) {
+      return res.status(404).json({
+        message: "Resident not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Resident deleted successfully",
+      resident,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Unable to delete resident",
+      error: error.message,
+    });
+  }
+});
+
+
+// Export the router so index.js can import it.
 export default router;
