@@ -37,6 +37,40 @@ function ResidentList() {
     fetchResidents();
   }, []);
 
+  // Delete a resident from the backend and remove it
+  // from the list shown on the page.
+  async function handleDelete(residentId) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this resident?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/residents/${residentId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to delete resident.");
+      }
+
+      // Remove the deleted resident from React state.
+      setResidents((currentResidents) =>
+        currentResidents.filter(
+          (resident) => resident._id !== residentId
+        )
+      );
+    } catch (error) {
+      setError(error.message);
+    }
+  }
+
   // Show a message while the request is loading.
   if (loading) {
     return <p>Loading residents...</p>;
@@ -62,6 +96,13 @@ function ResidentList() {
               {resident.clientName}
               {" - "}
               Family Size: {resident.familySize}
+              {" "}
+              <button
+                type="button"
+                onClick={() => handleDelete(resident._id)}
+              >
+                Delete
+              </button>
             </li>
           ))}
         </ul>
