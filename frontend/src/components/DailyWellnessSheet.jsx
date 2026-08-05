@@ -138,7 +138,7 @@ function DailyWellnessSheet() {
 
   // Save all resident wellness checks to the backend.
   async function handleSaveDailyChecks() {
-    // Staff name is required by the WellnessCheck model.
+    // Staff name is required.
     if (!staffName.trim()) {
       setMessage("Please enter the staff name before saving.");
       return;
@@ -152,8 +152,51 @@ function DailyWellnessSheet() {
 
     // Make sure there are residents to save.
     if (residents.length === 0) {
-      setMessage("There are no resident wellness checks to save.");
+      setMessage(
+        "There are no resident wellness checks to save."
+      );
       return;
+    }
+
+    // Validate each resident's attendance numbers before
+    // sending any wellness checks to the backend.
+    for (const resident of residents) {
+      const check = dailyChecks[resident._id];
+
+      // Make sure this resident has a daily check row.
+      if (!check) {
+        setMessage(
+          `Wellness information is missing for Unit ${resident.unitNumber}.`
+        );
+        return;
+      }
+
+      const adultsPresent = Number(check.adultsPresent);
+      const childrenPresent = Number(check.childrenPresent);
+
+      // Attendance values cannot be negative.
+      if (
+        adultsPresent < 0 ||
+        childrenPresent < 0
+      ) {
+        setMessage(
+          `Present counts cannot be negative for Unit ${resident.unitNumber}.`
+        );
+        return;
+      }
+
+      // Calculate the total number of people marked present.
+      const totalPresent =
+        adultsPresent + childrenPresent;
+
+      // Present household members cannot be greater
+      // than the resident's recorded family size.
+      if (totalPresent > resident.familySize) {
+        setMessage(
+          `Unit ${resident.unitNumber}: Adults and children present cannot exceed family size ${resident.familySize}.`
+        );
+        return;
+      }
     }
 
     try {
@@ -174,8 +217,12 @@ function DailyWellnessSheet() {
             body: JSON.stringify({
               resident: resident._id,
               status: check.status,
-              adultsPresent: Number(check.adultsPresent),
-              childrenPresent: Number(check.childrenPresent),
+              adultsPresent: Number(
+                check.adultsPresent
+              ),
+              childrenPresent: Number(
+                check.childrenPresent
+              ),
               comments: check.comments,
               staffName: staffName.trim(),
               checkDateTime: new Date(
@@ -323,7 +370,8 @@ function DailyWellnessSheet() {
 
             <tbody>
               {filteredResidents.map((resident) => {
-                const check = dailyChecks[resident._id];
+                const check =
+                  dailyChecks[resident._id];
 
                 if (!check) {
                   return null;
@@ -331,11 +379,17 @@ function DailyWellnessSheet() {
 
                 return (
                   <tr key={resident._id}>
-                    <td>{resident.unitNumber}</td>
+                    <td>
+                      {resident.unitNumber}
+                    </td>
 
-                    <td>{resident.clientName}</td>
+                    <td>
+                      {resident.clientName}
+                    </td>
 
-                    <td>{resident.familySize}</td>
+                    <td>
+                      {resident.familySize}
+                    </td>
 
                     <td>
                       <select
@@ -366,12 +420,16 @@ function DailyWellnessSheet() {
                       <input
                         type="number"
                         min="0"
-                        value={check.adultsPresent}
+                        value={
+                          check.adultsPresent
+                        }
                         onChange={(event) =>
                           handleRowChange(
                             resident._id,
                             "adultsPresent",
-                            Number(event.target.value)
+                            Number(
+                              event.target.value
+                            )
                           )
                         }
                       />
@@ -381,12 +439,16 @@ function DailyWellnessSheet() {
                       <input
                         type="number"
                         min="0"
-                        value={check.childrenPresent}
+                        value={
+                          check.childrenPresent
+                        }
                         onChange={(event) =>
                           handleRowChange(
                             resident._id,
                             "childrenPresent",
-                            Number(event.target.value)
+                            Number(
+                              event.target.value
+                            )
                           )
                         }
                       />
