@@ -6,6 +6,9 @@ function DailyWellnessSheet() {
   // Store all residents retrieved from MongoDB.
   const [residents, setResidents] = useState([]);
 
+  // Store the daily wellness values for each resident.
+  const [dailyChecks, setDailyChecks] = useState({});
+
   // Store an error message if residents cannot be loaded.
   const [error, setError] = useState("");
 
@@ -24,6 +27,20 @@ function DailyWellnessSheet() {
         const data = await response.json();
 
         setResidents(data);
+
+        // Create one wellness-check entry for every resident.
+        const initialChecks = {};
+
+        data.forEach((resident) => {
+          initialChecks[resident._id] = {
+            status: "Present",
+            adultsPresent: 0,
+            childrenPresent: 0,
+            comments: "",
+          };
+        });
+
+        setDailyChecks(initialChecks);
       } catch (error) {
         setError(error.message);
       }
@@ -31,6 +48,17 @@ function DailyWellnessSheet() {
 
     fetchResidents();
   }, []);
+
+  // Update one field for one resident row.
+  function handleRowChange(residentId, field, value) {
+    setDailyChecks((currentChecks) => ({
+      ...currentChecks,
+      [residentId]: {
+        ...currentChecks[residentId],
+        [field]: value,
+      },
+    }));
+  }
 
   return (
     <section>
@@ -55,36 +83,83 @@ function DailyWellnessSheet() {
           </thead>
 
           <tbody>
-            {residents.map((resident) => (
-              <tr key={resident._id}>
-                <td>{resident.unitNumber}</td>
-                <td>{resident.clientName}</td>
-                <td>{resident.familySize}</td>
+            {residents.map((resident) => {
+              const check = dailyChecks[resident._id];
 
-                <td>
-                  <select defaultValue="Present">
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Partial">Partial</option>
-                  </select>
-                </td>
+              if (!check) {
+                return null;
+              }
 
-                <td>
-                  <input type="number" min="0" defaultValue="0" />
-                </td>
+              return (
+                <tr key={resident._id}>
+                  <td>{resident.unitNumber}</td>
+                  <td>{resident.clientName}</td>
+                  <td>{resident.familySize}</td>
 
-                <td>
-                  <input type="number" min="0" defaultValue="0" />
-                </td>
+                  <td>
+                    <select
+                      value={check.status}
+                      onChange={(event) =>
+                        handleRowChange(
+                          resident._id,
+                          "status",
+                          event.target.value
+                        )
+                      }
+                    >
+                      <option value="Present">Present</option>
+                      <option value="Absent">Absent</option>
+                      <option value="Partial">Partial</option>
+                    </select>
+                  </td>
 
-                <td>
-                  <input
-                    type="text"
-                    placeholder="Optional comments"
-                  />
-                </td>
-              </tr>
-            ))}
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      value={check.adultsPresent}
+                      onChange={(event) =>
+                        handleRowChange(
+                          resident._id,
+                          "adultsPresent",
+                          Number(event.target.value)
+                        )
+                      }
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      value={check.childrenPresent}
+                      onChange={(event) =>
+                        handleRowChange(
+                          resident._id,
+                          "childrenPresent",
+                          Number(event.target.value)
+                        )
+                      }
+                    />
+                  </td>
+
+                  <td>
+                    <input
+                      type="text"
+                      placeholder="Optional comments"
+                      value={check.comments}
+                      onChange={(event) =>
+                        handleRowChange(
+                          resident._id,
+                          "comments",
+                          event.target.value
+                        )
+                      }
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
