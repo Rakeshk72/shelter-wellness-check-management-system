@@ -80,29 +80,60 @@ function DailyWellnessSheet() {
   }
 
   // Filter residents by unit number or resident name,
-// then sort the filtered results by unit number.
-const filteredResidents = residents
-  .filter((resident) => {
-    const search = searchTerm.toLowerCase().trim();
+  // then sort the filtered results by unit number.
+  const filteredResidents = residents
+    .filter((resident) => {
+      const search = searchTerm.toLowerCase().trim();
 
-    const unitNumber = resident.unitNumber
-      .toString()
-      .toLowerCase();
+      const unitNumber = resident.unitNumber
+        .toString()
+        .toLowerCase();
 
-    const residentName = resident.clientName
-      .toLowerCase();
+      const residentName = resident.clientName
+        .toLowerCase();
 
-    return (
-      unitNumber.includes(search) ||
-      residentName.includes(search)
+      return (
+        unitNumber.includes(search) ||
+        residentName.includes(search)
+      );
+    })
+    .sort((residentA, residentB) =>
+      residentA.unitNumber.localeCompare(
+        residentB.unitNumber,
+        undefined,
+        { numeric: true }
+      )
     );
-  })
-  .sort((residentA, residentB) =>
-    residentA.unitNumber.localeCompare(
-      residentB.unitNumber,
-      undefined,
-      { numeric: true }
-    )
+
+  // Calculate the current daily wellness summary.
+  // These values automatically change when a resident's
+  // status is changed in the table.
+  const dailySummary = residents.reduce(
+    (summary, resident) => {
+      const check = dailyChecks[resident._id];
+
+      summary.total += 1;
+
+      if (check?.status === "Present") {
+        summary.present += 1;
+      }
+
+      if (check?.status === "Absent") {
+        summary.absent += 1;
+      }
+
+      if (check?.status === "Partial") {
+        summary.partial += 1;
+      }
+
+      return summary;
+    },
+    {
+      total: 0,
+      present: 0,
+      absent: 0,
+      partial: 0,
+    }
   );
 
   // Save all resident wellness checks to the backend.
@@ -244,6 +275,29 @@ const filteredResidents = residents
           }
           placeholder="Enter staff name"
         />
+      </div>
+
+      {/* Display a live summary of the daily wellness statuses. */}
+      <div className="daily-summary">
+        <div>
+          <strong>Total Residents</strong>
+          <span>{dailySummary.total}</span>
+        </div>
+
+        <div>
+          <strong>Present</strong>
+          <span>{dailySummary.present}</span>
+        </div>
+
+        <div>
+          <strong>Absent</strong>
+          <span>{dailySummary.absent}</span>
+        </div>
+
+        <div>
+          <strong>Partial</strong>
+          <span>{dailySummary.partial}</span>
+        </div>
       </div>
 
       {error && <p>{error}</p>}

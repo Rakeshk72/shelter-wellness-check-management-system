@@ -278,3 +278,47 @@ main > section:nth-of-type(4) {
     padding: 13px;
   }
 }
+/* Daily wellness summary cards. */
+.daily-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 20px 0 24px;
+}
+
+/* Individual summary card. */
+.daily-summary > div {
+  padding: 16px;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    #eff6ff,
+    #eef2ff
+  );
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+/* Summary label. */
+.daily-summary strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+/* Summary number. */
+.daily-summary span {
+  display: block;
+  color: #1d4ed8;
+  font-size: 1.7rem;
+  font-weight: 700;
+}
+
+/* Stack summary cards on smaller screens. */
+@media (max-width: 700px) {
+  .daily-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
