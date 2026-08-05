@@ -1,184 +1,280 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+/* Main application container. */
+main {
+  width: min(1200px, calc(100% - 32px));
+  margin: 28px auto;
+  padding: 30px;
 }
 
-.hero {
-  position: relative;
+/* Main application title. */
+main > h1 {
+  margin: 0 0 32px;
+  padding: 30px 24px;
 
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
+  color: white;
+  text-align: center;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.1;
 
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #2563eb,
+      #7c3aed
+    );
 
-  .framework,
-  .vite {
-    position: absolute;
-  }
+  border-radius: 22px;
 
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
+  box-shadow:
+    0 14px 30px rgba(37, 99, 235, 0.22);
 }
 
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
+/* Every major application section becomes a card. */
+main > section {
+  max-width: 1000px;
+  margin: 22px auto;
+  padding: 26px;
 
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
+  background-color: rgba(255, 255, 255, 0.96);
+
+  border: 1px solid #dbeafe;
+  border-radius: 18px;
+
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.08);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
+/* Small hover effect makes the dashboard feel interactive. */
+main > section:hover {
+  transform: translateY(-2px);
 
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
+  box-shadow:
+    0 14px 32px rgba(15, 23, 42, 0.12);
 }
 
-#docs {
-  border-right: 1px solid var(--border);
+/* Section headings. */
+section h2 {
+  margin: 0 0 22px;
 
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
+  color: #1d4ed8;
+  text-align: center;
+
+  font-size: 1.65rem;
+  font-weight: 700;
 }
 
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
+/* Forms are centered and easier to read. */
+form {
+  width: min(600px, 100%);
+  margin: 0 auto;
 
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
+  display: grid;
+  gap: 14px;
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+/* Each label/input row. */
+form > div {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 12px;
 }
 
-.ticks {
-  position: relative;
+/* Labels. */
+label {
+  color: #334155;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Text fields, number fields, dropdowns and textarea. */
+input,
+select,
+textarea {
   width: 100%;
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+  padding: 10px 12px;
+
+  color: #1e293b;
+  background-color: #f8fafc;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Highlight active form fields. */
+input:focus,
+select:focus,
+textarea:focus {
+  background-color: white;
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.16);
+}
+
+/* Comments field. */
+textarea {
+  min-height: 85px;
+  resize: vertical;
+}
+
+/* General application buttons. */
+button {
+  padding: 9px 16px;
+
+  color: white;
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #4f46e5
+    );
+
+  border: none;
+  border-radius: 9px;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px rgba(37, 99, 235, 0.22);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Form buttons are centered. */
+form > button {
+  justify-self: center;
+  min-width: 180px;
+  margin-top: 4px;
+}
+
+/* Button hover effect. */
+button:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 14px rgba(37, 99, 235, 0.28);
+}
+
+/* Button click effect. */
+button:active {
+  transform: translateY(0);
+}
+
+/* Success and error messages appearing below forms. */
+section > p {
+  margin-top: 14px;
+
+  text-align: center;
+  font-weight: 600;
+  color: #047857;
+}
+
+/* Lists used for residents and wellness history. */
+section ul {
+  margin: 16px 0 0;
+  padding: 0;
+
+  list-style: none;
+
+  display: grid;
+  gap: 12px;
+}
+
+/* Individual resident / wellness check record. */
+section li {
+  padding: 15px 18px;
+
+  color: #334155;
+  background:
+    linear-gradient(
+      90deg,
+      #eff6ff,
+      #f5f3ff
+    );
+
+  border-left: 5px solid #3b82f6;
+  border-radius: 10px;
+
+  line-height: 1.7;
+
+  box-shadow:
+    0 3px 9px rgba(15, 23, 42, 0.05);
+}
+
+/* Important information such as Unit number. */
+section li strong {
+  color: #1e40af;
+}
+
+/* Buttons inside resident rows. */
+section li button {
+  margin-left: 7px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+/* Give each section a slightly different top accent. */
+main > section:nth-of-type(1) {
+  border-top: 5px solid #14b8a6;
+}
+
+main > section:nth-of-type(2) {
+  border-top: 5px solid #8b5cf6;
+}
+
+main > section:nth-of-type(3) {
+  border-top: 5px solid #f59e0b;
+}
+
+main > section:nth-of-type(4) {
+  border-top: 5px solid #3b82f6;
+}
+
+/* Responsive layout for tablets and phones. */
+@media (max-width: 700px) {
+  main {
+    width: calc(100% - 18px);
+    padding: 12px;
+    margin: 10px auto;
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+  main > h1 {
+    padding: 22px 14px;
+    margin-bottom: 18px;
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+
+  main > section {
+    padding: 20px 14px;
+    margin: 16px auto;
+  }
+
+  form > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  label {
+    text-align: left;
+  }
+
+  section li {
+    padding: 13px;
   }
 }
