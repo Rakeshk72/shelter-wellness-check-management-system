@@ -1,6 +1,9 @@
 // Import the ResidentForm component.
 import ResidentForm from "./components/ResidentForm.jsx";
 
+// Import the DailyWellnessSheet component.
+import DailyWellnessSheet from "./components/DailyWellnessSheet.jsx";
+
 // Import the WellnessCheckForm component.
 import WellnessCheckForm from "./components/WellnessCheckForm.jsx";
 
@@ -19,6 +22,8 @@ function App() {
       <h1>Shelter Wellness Check Management System</h1>
 
       <ResidentForm />
+
+      <DailyWellnessSheet />
 
       <WellnessCheckForm />
 
