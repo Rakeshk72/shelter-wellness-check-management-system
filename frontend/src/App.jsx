@@ -4,6 +4,9 @@ import ResidentForm from "./components/ResidentForm.jsx";
 // Import the WellnessCheckForm component.
 import WellnessCheckForm from "./components/WellnessCheckForm.jsx";
 
+// Import the WellnessCheckList component.
+import WellnessCheckList from "./components/WellnessCheckList.jsx";
+
 // Import the ResidentList component.
 import ResidentList from "./components/ResidentList.jsx";
 
@@ -18,6 +21,8 @@ function App() {
       <ResidentForm />
 
       <WellnessCheckForm />
+
+      <WellnessCheckList />
 
       <ResidentList />
     </main>
