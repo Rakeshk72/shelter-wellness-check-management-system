@@ -12,6 +12,12 @@ function DailyWellnessSheet() {
   // Store the staff member completing the wellness sheet.
   const [staffName, setStaffName] = useState("");
 
+  // Store the date for this wellness check sheet.
+  // Default to today's date.
+  const [checkDate, setCheckDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
   // Store a success or error message.
   const [message, setMessage] = useState("");
 
@@ -77,6 +83,12 @@ function DailyWellnessSheet() {
       return;
     }
 
+    // Wellness check date is required.
+    if (!checkDate) {
+      setMessage("Please select a wellness check date.");
+      return;
+    }
+
     // Make sure there are residents to save.
     if (residents.length === 0) {
       setMessage("There are no resident wellness checks to save.");
@@ -105,6 +117,11 @@ function DailyWellnessSheet() {
               childrenPresent: Number(check.childrenPresent),
               comments: check.comments,
               staffName: staffName.trim(),
+
+              // Save the selected date with the wellness check.
+              checkDateTime: new Date(
+                `${checkDate}T12:00:00`
+              ),
             }),
           }
         );
@@ -142,6 +159,9 @@ function DailyWellnessSheet() {
 
       setDailyChecks(resetChecks);
       setStaffName("");
+
+      // Keep the selected date so staff can continue
+      // working on the same day's wellness checks.
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -152,6 +172,21 @@ function DailyWellnessSheet() {
   return (
     <section>
       <h2>Daily Wellness Check Sheet</h2>
+
+      <div>
+        <label htmlFor="dailyCheckDate">
+          Wellness Check Date:
+        </label>
+
+        <input
+          id="dailyCheckDate"
+          type="date"
+          value={checkDate}
+          onChange={(event) =>
+            setCheckDate(event.target.value)
+          }
+        />
+      </div>
 
       <div>
         <label htmlFor="dailyStaffName">
