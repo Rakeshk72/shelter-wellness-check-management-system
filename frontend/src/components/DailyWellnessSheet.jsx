@@ -79,9 +79,10 @@ function DailyWellnessSheet() {
     }));
   }
 
-  // Filter residents by unit number or resident name.
-  // The search is case-insensitive.
-  const filteredResidents = residents.filter((resident) => {
+  // Filter residents by unit number or resident name,
+// then sort the filtered results by unit number.
+const filteredResidents = residents
+  .filter((resident) => {
     const search = searchTerm.toLowerCase().trim();
 
     const unitNumber = resident.unitNumber
@@ -95,7 +96,14 @@ function DailyWellnessSheet() {
       unitNumber.includes(search) ||
       residentName.includes(search)
     );
-  });
+  })
+  .sort((residentA, residentB) =>
+    residentA.unitNumber.localeCompare(
+      residentB.unitNumber,
+      undefined,
+      { numeric: true }
+    )
+  );
 
   // Save all resident wellness checks to the backend.
   async function handleSaveDailyChecks() {
