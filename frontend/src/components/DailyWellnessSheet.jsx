@@ -12,6 +12,10 @@ function DailyWellnessSheet() {
   // Store the staff member completing the wellness sheet.
   const [staffName, setStaffName] = useState("");
 
+  // Store the text used to search residents by
+  // unit number or resident name.
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Store the date for this wellness check sheet.
   // Default to today's date.
   const [checkDate, setCheckDate] = useState(
@@ -75,6 +79,24 @@ function DailyWellnessSheet() {
     }));
   }
 
+  // Filter residents by unit number or resident name.
+  // The search is case-insensitive.
+  const filteredResidents = residents.filter((resident) => {
+    const search = searchTerm.toLowerCase().trim();
+
+    const unitNumber = resident.unitNumber
+      .toString()
+      .toLowerCase();
+
+    const residentName = resident.clientName
+      .toLowerCase();
+
+    return (
+      unitNumber.includes(search) ||
+      residentName.includes(search)
+    );
+  });
+
   // Save all resident wellness checks to the backend.
   async function handleSaveDailyChecks() {
     // Staff name is required by the WellnessCheck model.
@@ -117,8 +139,6 @@ function DailyWellnessSheet() {
               childrenPresent: Number(check.childrenPresent),
               comments: check.comments,
               staffName: staffName.trim(),
-
-              // Save the selected date with the wellness check.
               checkDateTime: new Date(
                 `${checkDate}T12:00:00`
               ),
@@ -159,9 +179,7 @@ function DailyWellnessSheet() {
 
       setDailyChecks(resetChecks);
       setStaffName("");
-
-      // Keep the selected date so staff can continue
-      // working on the same day's wellness checks.
+      setSearchTerm("");
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -172,6 +190,22 @@ function DailyWellnessSheet() {
   return (
     <section>
       <h2>Daily Wellness Check Sheet</h2>
+
+      <div>
+        <label htmlFor="residentSearch">
+          Search Resident:
+        </label>
+
+        <input
+          id="residentSearch"
+          type="text"
+          value={searchTerm}
+          onChange={(event) =>
+            setSearchTerm(event.target.value)
+          }
+          placeholder="Search by unit number or resident name"
+        />
+      </div>
 
       <div>
         <label htmlFor="dailyCheckDate">
@@ -208,6 +242,8 @@ function DailyWellnessSheet() {
 
       {residents.length === 0 && !error ? (
         <p>No residents available.</p>
+      ) : filteredResidents.length === 0 ? (
+        <p>No residents match your search.</p>
       ) : (
         <>
           <table>
@@ -224,7 +260,7 @@ function DailyWellnessSheet() {
             </thead>
 
             <tbody>
-              {residents.map((resident) => {
+              {filteredResidents.map((resident) => {
                 const check = dailyChecks[resident._id];
 
                 if (!check) {
