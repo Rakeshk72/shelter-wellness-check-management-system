@@ -27,28 +27,44 @@ const residentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Total number of people in the family.
+    // Total number of people in the household.
     familySize: {
       type: Number,
       required: true,
       min: 1,
     },
 
-    // Indicates whether the resident/family is currently active
-    // in the shelter.
+    // Number of adults in the household.
+    adultsInFamily: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // Number of children in the household.
+    childrenInFamily: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    // Indicates whether the resident is currently active.
     isActive: {
       type: Boolean,
       default: true,
     },
   },
   {
-    // Automatically creates createdAt and updatedAt fields.
+    // Automatically creates createdAt and updatedAt.
     timestamps: true,
   }
 );
 
-// Create the Resident model from the schema.
-const Resident = mongoose.model("Resident", residentSchema);
+// Create the Resident model.
+const Resident = mongoose.model(
+  "Resident",
+  residentSchema
+);
 
-// Export the model so routes/controllers can use it.
+// Export the model so it can be used in routes.
 export default Resident;

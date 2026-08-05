@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 function ResidentList() {
-  // Store the residents returned from the backend.
+  // Store residents returned from the backend.
   const [residents, setResidents] = useState([]);
 
   // Store loading state while waiting for the API.
@@ -13,16 +13,20 @@ function ResidentList() {
   const [error, setError] = useState("");
 
   // Store the ID of the resident currently being edited.
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] =
+    useState(null);
 
-  // Store the editable resident values.
-  const [editFormData, setEditFormData] = useState({
-    unitNumber: "",
-    clientName: "",
-    caresNumber: "",
-    familySize: 1,
-    isActive: true,
-  });
+  // Store editable resident values.
+  const [editFormData, setEditFormData] =
+    useState({
+      unitNumber: "",
+      clientName: "",
+      caresNumber: "",
+      familySize: 1,
+      adultsInFamily: 0,
+      childrenInFamily: 0,
+      isActive: true,
+    });
 
   // Fetch residents when this component first loads.
   useEffect(() => {
@@ -33,7 +37,9 @@ function ResidentList() {
         );
 
         if (!response.ok) {
-          throw new Error("Unable to retrieve residents.");
+          throw new Error(
+            "Unable to retrieve residents."
+          );
         }
 
         const data = await response.json();
@@ -49,7 +55,7 @@ function ResidentList() {
     fetchResidents();
   }, []);
 
-  // Start editing a selected resident.
+  // Start editing the selected resident.
   function handleEdit(resident) {
     setEditingId(resident._id);
 
@@ -58,11 +64,19 @@ function ResidentList() {
       clientName: resident.clientName,
       caresNumber: resident.caresNumber,
       familySize: resident.familySize,
+
+      // Older test residents may not have these fields yet.
+      adultsInFamily:
+        resident.adultsInFamily ?? 0,
+
+      childrenInFamily:
+        resident.childrenInFamily ?? 0,
+
       isActive: resident.isActive,
     });
   }
 
-  // Update edit form values while typing.
+  // Update the edit form while typing.
   function handleEditChange(event) {
     const { name, value } = event.target;
 
@@ -72,7 +86,7 @@ function ResidentList() {
     });
   }
 
-  // Save the updated resident to the backend.
+  // Save the updated resident.
   async function handleUpdate(residentId) {
     try {
       const response = await fetch(
@@ -84,38 +98,49 @@ function ResidentList() {
           },
           body: JSON.stringify({
             ...editFormData,
-            familySize: Number(editFormData.familySize),
+            familySize: Number(
+              editFormData.familySize
+            ),
+            adultsInFamily: Number(
+              editFormData.adultsInFamily
+            ),
+            childrenInFamily: Number(
+              editFormData.childrenInFamily
+            ),
           }),
         }
       );
 
       if (!response.ok) {
-        throw new Error("Unable to update resident.");
+        throw new Error(
+          "Unable to update resident."
+        );
       }
 
-      const updatedResident = await response.json();
+      const updatedResident =
+        await response.json();
 
-      // Replace the old resident with the updated resident.
+      // Replace old data with updated data.
       setResidents((currentResidents) =>
         currentResidents.map((resident) =>
-          resident._id === residentId ? updatedResident : resident
+          resident._id === residentId
+            ? updatedResident
+            : resident
         )
       );
 
-      // Exit edit mode.
       setEditingId(null);
     } catch (error) {
       setError(error.message);
     }
   }
 
-  // Cancel editing without saving changes.
+  // Cancel editing.
   function handleCancel() {
     setEditingId(null);
   }
 
-  // Delete a resident from the backend and remove it
-  // from the list shown on the page.
+  // Delete a resident.
   async function handleDelete(residentId) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this resident?"
@@ -134,12 +159,15 @@ function ResidentList() {
       );
 
       if (!response.ok) {
-        throw new Error("Unable to delete resident.");
+        throw new Error(
+          "Unable to delete resident."
+        );
       }
 
       setResidents((currentResidents) =>
         currentResidents.filter(
-          (resident) => resident._id !== residentId
+          (resident) =>
+            resident._id !== residentId
         )
       );
     } catch (error) {
@@ -169,33 +197,69 @@ function ResidentList() {
                 <>
                   <input
                     name="unitNumber"
-                    value={editFormData.unitNumber}
+                    value={
+                      editFormData.unitNumber
+                    }
                     onChange={handleEditChange}
+                    placeholder="Unit"
                   />
 
                   <input
                     name="clientName"
-                    value={editFormData.clientName}
+                    value={
+                      editFormData.clientName
+                    }
                     onChange={handleEditChange}
+                    placeholder="Client name"
                   />
 
                   <input
                     name="caresNumber"
-                    value={editFormData.caresNumber}
+                    value={
+                      editFormData.caresNumber
+                    }
                     onChange={handleEditChange}
+                    placeholder="CARES number"
                   />
 
                   <input
                     name="familySize"
                     type="number"
                     min="1"
-                    value={editFormData.familySize}
+                    value={
+                      editFormData.familySize
+                    }
                     onChange={handleEditChange}
+                    placeholder="Family size"
+                  />
+
+                  <input
+                    name="adultsInFamily"
+                    type="number"
+                    min="0"
+                    value={
+                      editFormData.adultsInFamily
+                    }
+                    onChange={handleEditChange}
+                    placeholder="Adults"
+                  />
+
+                  <input
+                    name="childrenInFamily"
+                    type="number"
+                    min="0"
+                    value={
+                      editFormData.childrenInFamily
+                    }
+                    onChange={handleEditChange}
+                    placeholder="Children"
                   />
 
                   <button
                     type="button"
-                    onClick={() => handleUpdate(resident._id)}
+                    onClick={() =>
+                      handleUpdate(resident._id)
+                    }
                   >
                     Save
                   </button>
@@ -209,16 +273,36 @@ function ResidentList() {
                 </>
               ) : (
                 <>
-                  <strong>Unit {resident.unitNumber}</strong>
+                  <strong>
+                    Unit {resident.unitNumber}
+                  </strong>
+
                   {" - "}
+
                   {resident.clientName}
+
                   {" - "}
-                  Family Size: {resident.familySize}
+
+                  Family Size:{" "}
+                  {resident.familySize}
+
+                  {" - "}
+
+                  Composition:{" "}
+                  {resident.adultsInFamily ??
+                    "?"}
+                  A /{" "}
+                  {resident.childrenInFamily ??
+                    "?"}
+                  C
+
                   {" "}
 
                   <button
                     type="button"
-                    onClick={() => handleEdit(resident)}
+                    onClick={() =>
+                      handleEdit(resident)
+                    }
                   >
                     Edit
                   </button>
@@ -227,7 +311,9 @@ function ResidentList() {
 
                   <button
                     type="button"
-                    onClick={() => handleDelete(resident._id)}
+                    onClick={() =>
+                      handleDelete(resident._id)
+                    }
                   >
                     Delete
                   </button>

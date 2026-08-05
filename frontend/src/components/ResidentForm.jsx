@@ -8,13 +8,15 @@ function ResidentForm() {
     clientName: "",
     caresNumber: "",
     familySize: 1,
+    adultsInFamily: 1,
+    childrenInFamily: 0,
     isActive: true,
   });
 
   // Store a message to show after submitting the form.
   const [message, setMessage] = useState("");
 
-  // Update formData whenever the user types in an input.
+  // Update formData whenever the user changes an input.
   function handleChange(event) {
     const { name, value } = event.target;
 
@@ -38,18 +40,30 @@ function ResidentForm() {
           },
           body: JSON.stringify({
             ...formData,
+
+            // Convert number inputs from strings to numbers.
             familySize: Number(formData.familySize),
+            adultsInFamily: Number(
+              formData.adultsInFamily
+            ),
+            childrenInFamily: Number(
+              formData.childrenInFamily
+            ),
           }),
         }
       );
 
       if (!response.ok) {
-        throw new Error("Unable to create resident.");
+        throw new Error(
+          "Unable to create resident."
+        );
       }
 
       await response.json();
 
-      setMessage("Resident added successfully.");
+      setMessage(
+        "Resident added successfully."
+      );
 
       // Clear the form after successful submission.
       setFormData({
@@ -57,6 +71,8 @@ function ResidentForm() {
         clientName: "",
         caresNumber: "",
         familySize: 1,
+        adultsInFamily: 1,
+        childrenInFamily: 0,
         isActive: true,
       });
     } catch (error) {
@@ -70,7 +86,10 @@ function ResidentForm() {
 
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="unitNumber">Unit Number:</label>
+          <label htmlFor="unitNumber">
+            Unit Number:
+          </label>
+
           <input
             id="unitNumber"
             name="unitNumber"
@@ -82,7 +101,10 @@ function ResidentForm() {
         </div>
 
         <div>
-          <label htmlFor="clientName">Client Name:</label>
+          <label htmlFor="clientName">
+            Client Name:
+          </label>
+
           <input
             id="clientName"
             name="clientName"
@@ -94,7 +116,10 @@ function ResidentForm() {
         </div>
 
         <div>
-          <label htmlFor="caresNumber">CARES Number:</label>
+          <label htmlFor="caresNumber">
+            CARES Number:
+          </label>
+
           <input
             id="caresNumber"
             name="caresNumber"
@@ -106,7 +131,10 @@ function ResidentForm() {
         </div>
 
         <div>
-          <label htmlFor="familySize">Family Size:</label>
+          <label htmlFor="familySize">
+            Family Size:
+          </label>
+
           <input
             id="familySize"
             name="familySize"
@@ -118,7 +146,41 @@ function ResidentForm() {
           />
         </div>
 
-        <button type="submit">Add Resident</button>
+        <div>
+          <label htmlFor="adultsInFamily">
+            Adults in Family:
+          </label>
+
+          <input
+            id="adultsInFamily"
+            name="adultsInFamily"
+            type="number"
+            min="0"
+            value={formData.adultsInFamily}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="childrenInFamily">
+            Children in Family:
+          </label>
+
+          <input
+            id="childrenInFamily"
+            name="childrenInFamily"
+            type="number"
+            min="0"
+            value={formData.childrenInFamily}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        <button type="submit">
+          Add Resident
+        </button>
       </form>
 
       {message && <p>{message}</p>}
