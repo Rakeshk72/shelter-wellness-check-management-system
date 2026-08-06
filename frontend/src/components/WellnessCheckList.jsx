@@ -5,6 +5,9 @@ function WellnessCheckList() {
   // Store wellness checks returned from the backend.
   const [checks, setChecks] = useState([]);
 
+  // Store the text used to search wellness history.
+  const [searchTerm, setSearchTerm] = useState("");
+
   // Store loading state while waiting for the API.
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +53,27 @@ function WellnessCheckList() {
     return date.toLocaleString();
   }
 
+  // Filter wellness history by unit number
+  // or resident name.
+  const filteredChecks = checks.filter((check) => {
+    const search =
+      searchTerm.toLowerCase().trim();
+
+    const unitNumber =
+      check.resident?.unitNumber
+        ?.toString()
+        .toLowerCase() || "";
+
+    const residentName =
+      check.resident?.clientName
+        ?.toLowerCase() || "";
+
+    return (
+      unitNumber.includes(search) ||
+      residentName.includes(search)
+    );
+  });
+
   // Show a loading message while waiting for the API.
   if (loading) {
     return <p>Loading wellness checks...</p>;
@@ -64,11 +88,29 @@ function WellnessCheckList() {
     <section>
       <h2>Wellness Check History</h2>
 
+      <div>
+        <label htmlFor="historySearch">
+          Search History:
+        </label>
+
+        <input
+          id="historySearch"
+          type="text"
+          value={searchTerm}
+          onChange={(event) =>
+            setSearchTerm(event.target.value)
+          }
+          placeholder="Search by unit number or resident name"
+        />
+      </div>
+
       {checks.length === 0 ? (
         <p>No wellness checks found.</p>
+      ) : filteredChecks.length === 0 ? (
+        <p>No wellness checks match your search.</p>
       ) : (
         <ul>
-          {checks.map((check) => (
+          {filteredChecks.map((check) => (
             <li key={check._id}>
               <strong>
                 Unit {check.resident?.unitNumber || "N/A"}
@@ -102,7 +144,9 @@ function WellnessCheckList() {
               {" - "}
 
               Recorded:{" "}
-              {formatCheckDateTime(check.checkDateTime)}
+              {formatCheckDateTime(
+                check.checkDateTime
+              )}
             </li>
           ))}
         </ul>
