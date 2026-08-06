@@ -15,6 +15,11 @@ function DailyWellnessSheet() {
   // Store text used to search residents.
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Store the beginning and ending unit numbers
+  // assigned to the current staff member.
+  const [fromUnit, setFromUnit] = useState("");
+  const [toUnit, setToUnit] = useState("");
+
   // Store wellness check date.
   const [checkDate, setCheckDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -50,7 +55,7 @@ function DailyWellnessSheet() {
 
         setResidents(data);
 
-        // Create one daily wellness row for each resident.
+        // Create one daily wellness row for every resident.
         const initialChecks = {};
 
         data.forEach((resident) => {
@@ -80,6 +85,7 @@ function DailyWellnessSheet() {
   ) {
     setDailyChecks((currentChecks) => ({
       ...currentChecks,
+
       [residentId]: {
         ...currentChecks[residentId],
         [field]: value,
@@ -87,13 +93,14 @@ function DailyWellnessSheet() {
     }));
   }
 
-  // Search residents and sort by unit number.
+  // Filter residents by search text and assigned unit range,
+  // then sort the results by unit number.
   const filteredResidents = residents
     .filter((resident) => {
       const search =
         searchTerm.toLowerCase().trim();
 
-      const unitNumber =
+      const unitNumberText =
         resident.unitNumber
           .toString()
           .toLowerCase();
@@ -101,9 +108,42 @@ function DailyWellnessSheet() {
       const residentName =
         resident.clientName.toLowerCase();
 
+      // Check the normal search box.
+      const matchesSearch =
+        unitNumberText.includes(search) ||
+        residentName.includes(search);
+
+      // Convert the unit number to a number
+      // so numeric ranges can be compared.
+      const residentUnitNumber =
+        Number(resident.unitNumber);
+
+      const startingUnit =
+        fromUnit === ""
+          ? null
+          : Number(fromUnit);
+
+      const endingUnit =
+        toUnit === ""
+          ? null
+          : Number(toUnit);
+
+      // If no From Unit is entered,
+      // there is no lower limit.
+      const matchesFromUnit =
+        startingUnit === null ||
+        residentUnitNumber >= startingUnit;
+
+      // If no To Unit is entered,
+      // there is no upper limit.
+      const matchesToUnit =
+        endingUnit === null ||
+        residentUnitNumber <= endingUnit;
+
       return (
-        unitNumber.includes(search) ||
-        residentName.includes(search)
+        matchesSearch &&
+        matchesFromUnit &&
+        matchesToUnit
       );
     })
     .sort((residentA, residentB) =>
@@ -114,8 +154,9 @@ function DailyWellnessSheet() {
       )
     );
 
-  // Calculate the live daily status summary.
-  const dailySummary = residents.reduce(
+  // Calculate the live summary only for the
+  // residents currently displayed/assigned.
+  const dailySummary = filteredResidents.reduce(
     (summary, resident) => {
       const check =
         dailyChecks[resident._id];
@@ -144,9 +185,9 @@ function DailyWellnessSheet() {
     }
   );
 
-  // Save all wellness-check rows.
+  // Save only the wellness-check rows currently displayed.
   async function handleSaveDailyChecks() {
-    // Require the staff member's name.
+    // Staff name is required.
     if (!staffName.trim()) {
       setMessage(
         "Please enter the staff name before saving."
@@ -170,16 +211,29 @@ function DailyWellnessSheet() {
       return;
     }
 
-    // Make sure residents exist before saving.
-    if (residents.length === 0) {
+    // Prevent an invalid unit range.
+    if (
+      fromUnit !== "" &&
+      toUnit !== "" &&
+      Number(fromUnit) > Number(toUnit)
+    ) {
       setMessage(
-        "There are no resident wellness checks to save."
+        "From Unit cannot be greater than To Unit."
       );
       return;
     }
 
-    // Validate attendance against family size.
-    for (const resident of residents) {
+    // Make sure at least one resident is displayed.
+    if (filteredResidents.length === 0) {
+      setMessage(
+        "There are no residents in the selected unit range."
+      );
+      return;
+    }
+
+    // Validate attendance only for the residents
+    // assigned to the current staff member.
+    for (const resident of filteredResidents) {
       const check =
         dailyChecks[resident._id];
 
@@ -228,8 +282,9 @@ function DailyWellnessSheet() {
       setSaving(true);
       setMessage("");
 
-      // Create one POST request for every resident.
-      const requests = residents.map(
+      // Create one POST request only for the
+      // residents currently displayed.
+      const requests = filteredResidents.map(
         (resident) => {
           const check =
             dailyChecks[resident._id];
@@ -247,8 +302,6 @@ function DailyWellnessSheet() {
               body: JSON.stringify({
                 resident: resident._id,
 
-                // Save the selected round with
-                // every wellness check.
                 checkRound,
 
                 status: check.status,
@@ -278,7 +331,7 @@ function DailyWellnessSheet() {
         }
       );
 
-      // Wait for all resident checks to save.
+      // Wait for all assigned resident checks to save.
       const responses =
         await Promise.all(requests);
 
@@ -295,28 +348,35 @@ function DailyWellnessSheet() {
       }
 
       setMessage(
-        `${residents.length} wellness check(s) saved successfully for ${checkRound}.`
+        `${filteredResidents.length} wellness check(s) saved successfully for ${checkRound}.`
       );
 
-      // Reset the daily sheet after saving.
-      const resetChecks = {};
-
-      residents.forEach((resident) => {
-        resetChecks[resident._id] = {
-          status: "Present",
-          nsrPresence: "Not Recorded",
-          adultsPresent: 0,
-          childrenPresent: 0,
-          comments: "",
+      // Reset only the rows that were just saved.
+      setDailyChecks((currentChecks) => {
+        const updatedChecks = {
+          ...currentChecks,
         };
+
+        filteredResidents.forEach(
+          (resident) => {
+            updatedChecks[resident._id] = {
+              status: "Present",
+              nsrPresence: "Not Recorded",
+              adultsPresent: 0,
+              childrenPresent: 0,
+              comments: "",
+            };
+          }
+        );
+
+        return updatedChecks;
       });
 
-      setDailyChecks(resetChecks);
-
-      // Clear the staff name, search, and round
-      // after a successful submission.
+      // Clear assignment information after saving.
       setStaffName("");
       setSearchTerm("");
+      setFromUnit("");
+      setToUnit("");
       setCheckRound("");
     } catch (error) {
       setMessage(error.message);
@@ -331,6 +391,7 @@ function DailyWellnessSheet() {
         Daily Wellness Check Sheet
       </h2>
 
+      {/* Search by unit number or resident name. */}
       <div>
         <label htmlFor="residentSearch">
           Search Resident:
@@ -347,6 +408,47 @@ function DailyWellnessSheet() {
           }
           placeholder="Search by unit number or resident name"
         />
+      </div>
+
+      {/* Staff can select only their assigned unit range. */}
+      <div className="unit-range-filter">
+        <div>
+          <label htmlFor="fromUnit">
+            From Unit:
+          </label>
+
+          <input
+            id="fromUnit"
+            type="number"
+            min="0"
+            value={fromUnit}
+            onChange={(event) =>
+              setFromUnit(
+                event.target.value
+              )
+            }
+            placeholder="Example: 201"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="toUnit">
+            To Unit:
+          </label>
+
+          <input
+            id="toUnit"
+            type="number"
+            min="0"
+            value={toUnit}
+            onChange={(event) =>
+              setToUnit(
+                event.target.value
+              )
+            }
+            placeholder="Example: 220"
+          />
+        </div>
       </div>
 
       <div>
@@ -433,11 +535,11 @@ function DailyWellnessSheet() {
         />
       </div>
 
-      {/* Live wellness status summary. */}
+      {/* Live status summary for currently displayed residents. */}
       <div className="daily-summary">
         <div>
           <strong>
-            Total Residents
+            Assigned Residents
           </strong>
 
           <span>
@@ -478,7 +580,7 @@ function DailyWellnessSheet() {
       ) : filteredResidents.length ===
         0 ? (
         <p>
-          No residents match your search.
+          No residents match your search or unit range.
         </p>
       ) : (
         <>
@@ -703,7 +805,7 @@ function DailyWellnessSheet() {
           >
             {saving
               ? "Saving..."
-              : "Save Daily Wellness Checks"}
+              : `Save ${filteredResidents.length} Assigned Wellness Check(s)`}
           </button>
 
           {message && (
