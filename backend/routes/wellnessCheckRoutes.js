@@ -109,9 +109,21 @@ router.post("/", async (req, res) => {
 
       // Stop the request if this round was already recorded.
       if (existingCheck) {
+        // Populate resident information so we can identify
+        // the exact unit in the duplicate warning.
+        await existingCheck.populate("resident");
+
+        const unitNumber =
+          existingCheck.resident?.unitNumber ||
+          "Unknown";
+
+        // Format the date into an easy-to-read value.
+        const formattedDate =
+          submittedDate.toLocaleDateString();
+
         return res.status(409).json({
           message:
-            "A wellness check already exists for this resident, date, and check round.",
+            `Unit ${unitNumber} already has a wellness check for ${checkRound} on ${formattedDate}.`,
         });
       }
     }
