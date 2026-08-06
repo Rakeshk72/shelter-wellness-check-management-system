@@ -193,6 +193,35 @@ function DailyWellnessSheet() {
     );
   }
 
+  // Mark all currently displayed residents as Present.
+  function handleMarkAllPresent() {
+    if (filteredResidents.length === 0) {
+      setMessage(
+        "There are no assigned residents to mark as Present."
+      );
+      return;
+    }
+
+    setDailyChecks((currentChecks) => {
+      const updatedChecks = {
+        ...currentChecks,
+      };
+
+      filteredResidents.forEach((resident) => {
+        updatedChecks[resident._id] = {
+          ...updatedChecks[resident._id],
+          status: "Present",
+        };
+      });
+
+      return updatedChecks;
+    });
+
+    setMessage(
+      `${filteredResidents.length} assigned resident(s) marked as Present.`
+    );
+  }
+
   // Calculate the live summary only for the
   // residents currently displayed/assigned.
   const dailySummary = filteredResidents.reduce(
@@ -607,6 +636,13 @@ function DailyWellnessSheet() {
           onClick={handleApplyDefaultStaff}
         >
           Apply Staff to Assigned Units
+        </button>
+
+        <button
+          type="button"
+          onClick={handleMarkAllPresent}
+        >
+          Mark All Present
         </button>
       </div>
 
