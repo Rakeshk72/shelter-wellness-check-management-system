@@ -222,6 +222,42 @@ function DailyWellnessSheet() {
     );
   }
 
+  // Reset all currently displayed resident rows
+  // back to their default unsaved values.
+  function handleResetAssignedRows() {
+    if (filteredResidents.length === 0) {
+      setMessage(
+        "There are no assigned residents to reset."
+      );
+      return;
+    }
+
+    setDailyChecks((currentChecks) => {
+      const updatedChecks = {
+        ...currentChecks,
+      };
+
+      filteredResidents.forEach((resident) => {
+        updatedChecks[resident._id] = {
+          status: "Present",
+          nsrPresence: "Not Recorded",
+          adultsPresent: 0,
+          childrenPresent: 0,
+          comments: "",
+          staffName: "",
+        };
+      });
+
+      return updatedChecks;
+    });
+
+    setDefaultStaffName("");
+
+    setMessage(
+      `${filteredResidents.length} assigned resident row(s) reset.`
+    );
+  }
+
   // Calculate the live summary only for the
   // residents currently displayed/assigned.
   const dailySummary = filteredResidents.reduce(
@@ -643,6 +679,13 @@ function DailyWellnessSheet() {
           onClick={handleMarkAllPresent}
         >
           Mark All Present
+        </button>
+
+        <button
+          type="button"
+          onClick={handleResetAssignedRows}
+        >
+          Reset Assigned Rows
         </button>
       </div>
 
