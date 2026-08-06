@@ -8,11 +8,21 @@ import WellnessCheck from "../models/WellnessCheck.js";
 const router = express.Router();
 
 // GET /api/wellness-checks
-// Retrieve all wellness checks from MongoDB.
+// Retrieve wellness checks from MongoDB.
+// If a resident ID is provided, return checks for that resident only.
 // Display the newest wellness checks first.
 router.get("/", async (req, res) => {
   try {
-    const checks = await WellnessCheck.find()
+    // Create an empty filter for the MongoDB query.
+    const filter = {};
+
+    // If a resident ID is provided in the query string,
+    // retrieve wellness checks for that resident only.
+    if (req.query.resident) {
+      filter.resident = req.query.resident;
+    }
+
+    const checks = await WellnessCheck.find(filter)
       .populate("resident")
       .sort({ checkDateTime: -1 });
 
