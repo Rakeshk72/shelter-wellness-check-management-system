@@ -9,8 +9,9 @@ function DailyWellnessSheet() {
   // Store the daily wellness values for each resident.
   const [dailyChecks, setDailyChecks] = useState({});
 
-  // Store the staff member completing the sheet.
-  const [staffName, setStaffName] = useState("");
+  // Store a default staff name that can be applied
+  // to all currently assigned resident rows.
+  const [defaultStaffName, setDefaultStaffName] = useState("");
 
   // Store text used to search residents.
   const [searchTerm, setSearchTerm] = useState("");
@@ -65,6 +66,7 @@ function DailyWellnessSheet() {
             adultsPresent: 0,
             childrenPresent: 0,
             comments: "",
+            staffName: "",
           };
         });
 
@@ -154,6 +156,43 @@ function DailyWellnessSheet() {
       )
     );
 
+  // Apply the default staff name to every resident
+  // currently displayed in the assigned unit range.
+  function handleApplyDefaultStaff() {
+    if (!defaultStaffName.trim()) {
+      setMessage(
+        "Please enter a default staff name first."
+      );
+      return;
+    }
+
+    if (filteredResidents.length === 0) {
+      setMessage(
+        "There are no assigned residents to apply the staff name to."
+      );
+      return;
+    }
+
+    setDailyChecks((currentChecks) => {
+      const updatedChecks = {
+        ...currentChecks,
+      };
+
+      filteredResidents.forEach((resident) => {
+        updatedChecks[resident._id] = {
+          ...updatedChecks[resident._id],
+          staffName: defaultStaffName.trim(),
+        };
+      });
+
+      return updatedChecks;
+    });
+
+    setMessage(
+      `Staff name applied to ${filteredResidents.length} assigned resident(s).`
+    );
+  }
+
   // Calculate the live summary only for the
   // residents currently displayed/assigned.
   const dailySummary = filteredResidents.reduce(
@@ -187,14 +226,6 @@ function DailyWellnessSheet() {
 
   // Save only the wellness-check rows currently displayed.
   async function handleSaveDailyChecks() {
-    // Staff name is required.
-    if (!staffName.trim()) {
-      setMessage(
-        "Please enter the staff name before saving."
-      );
-      return;
-    }
-
     // Require a wellness check date.
     if (!checkDate) {
       setMessage(
@@ -231,8 +262,8 @@ function DailyWellnessSheet() {
       return;
     }
 
-    // Validate attendance only for the residents
-    // assigned to the current staff member.
+    // Validate attendance and staff information
+    // only for the assigned residents.
     for (const resident of filteredResidents) {
       const check =
         dailyChecks[resident._id];
@@ -240,6 +271,19 @@ function DailyWellnessSheet() {
       if (!check) {
         setMessage(
           `Wellness information is missing for Unit ${resident.unitNumber}.`
+        );
+        return;
+      }
+
+      // Each saved resident row must identify
+      // which staff member completed the check.
+      const rowStaffName =
+        check.staffName?.trim() ||
+        defaultStaffName.trim();
+
+      if (!rowStaffName) {
+        setMessage(
+          `Please enter Checked By for Unit ${resident.unitNumber}.`
         );
         return;
       }
@@ -289,6 +333,10 @@ function DailyWellnessSheet() {
           const check =
             dailyChecks[resident._id];
 
+          const rowStaffName =
+            check.staffName.trim() ||
+            defaultStaffName.trim();
+
           return fetch(
             "http://localhost:5000/api/wellness-checks",
             {
@@ -319,8 +367,10 @@ function DailyWellnessSheet() {
 
                 comments: check.comments,
 
+                // Save the staff member responsible
+                // for this individual resident row.
                 staffName:
-                  staffName.trim(),
+                  rowStaffName,
 
                 checkDateTime: new Date(
                   `${checkDate}T12:00:00`
@@ -365,6 +415,7 @@ function DailyWellnessSheet() {
               adultsPresent: 0,
               childrenPresent: 0,
               comments: "",
+              staffName: "",
             };
           }
         );
@@ -373,7 +424,7 @@ function DailyWellnessSheet() {
       });
 
       // Clear assignment information after saving.
-      setStaffName("");
+      setDefaultStaffName("");
       setSearchTerm("");
       setFromUnit("");
       setToUnit("");
@@ -517,22 +568,30 @@ function DailyWellnessSheet() {
         </select>
       </div>
 
+      {/* Default staff name can be copied to all assigned rows. */}
       <div>
-        <label htmlFor="dailyStaffName">
-          Staff Name:
+        <label htmlFor="defaultStaffName">
+          Default Staff Name:
         </label>
 
         <input
-          id="dailyStaffName"
+          id="defaultStaffName"
           type="text"
-          value={staffName}
+          value={defaultStaffName}
           onChange={(event) =>
-            setStaffName(
+            setDefaultStaffName(
               event.target.value
             )
           }
           placeholder="Enter staff name"
         />
+
+        <button
+          type="button"
+          onClick={handleApplyDefaultStaff}
+        >
+          Apply Staff to Assigned Units
+        </button>
       </div>
 
       {/* Live status summary for currently displayed residents. */}
@@ -614,6 +673,10 @@ function DailyWellnessSheet() {
                 </th>
 
                 <th>Comments</th>
+
+                <th>
+                  Checked By
+                </th>
               </tr>
             </thead>
 
@@ -787,6 +850,26 @@ function DailyWellnessSheet() {
                                 .value
                             )
                           }
+                        />
+                      </td>
+
+                      <td>
+                        <input
+                          type="text"
+                          value={
+                            check.staffName
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            handleRowChange(
+                              resident._id,
+                              "staffName",
+                              event.target
+                                .value
+                            )
+                          }
+                          placeholder="Staff name"
                         />
                       </td>
                     </tr>
