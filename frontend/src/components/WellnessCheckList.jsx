@@ -38,6 +38,18 @@ function WellnessCheckList() {
     fetchWellnessChecks();
   }, []);
 
+  // Format the backend-recorded date and time
+  // into an easy-to-read local format.
+  function formatCheckDateTime(dateValue) {
+    if (!dateValue) {
+      return "Not available";
+    }
+
+    const date = new Date(dateValue);
+
+    return date.toLocaleString();
+  }
+
   // Show a loading message while waiting for the API.
   if (loading) {
     return <p>Loading wellness checks...</p>;
@@ -86,6 +98,11 @@ function WellnessCheckList() {
               {" - "}
 
               Staff: {check.staffName}
+
+              {" - "}
+
+              Recorded:{" "}
+              {formatCheckDateTime(check.checkDateTime)}
             </li>
           ))}
         </ul>
