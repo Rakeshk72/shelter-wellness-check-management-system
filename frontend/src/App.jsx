@@ -1,3 +1,6 @@
+// Import useState so React can track the currently selected page.
+import { useState } from "react";
+
 // Import the ResidentForm component.
 import ResidentForm from "./components/ResidentForm.jsx";
 
@@ -17,42 +20,89 @@ import ResidentList from "./components/ResidentList.jsx";
 import "./App.css";
 
 function App() {
+  // Store which section of the application is currently selected.
+  // Dashboard is displayed when the application first loads.
+  const [activeSection, setActiveSection] = useState("dashboard");
+
   return (
     <main>
       {/* Main application title. */}
       <h1>Shelter Wellness Check Management System</h1>
 
-      {/* 
-        Main navigation.
-        For this commit, the buttons only display the navigation UI.
-        In the next step, we will connect them to different sections.
-      */}
+      {/* Main application navigation. */}
       <nav className="main-navigation">
-        <button type="button">Dashboard</button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("dashboard")}
+        >
+          Dashboard
+        </button>
 
-        <button type="button">Daily Check</button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("daily")}
+        >
+          Daily Check
+        </button>
 
-        <button type="button">Record Check</button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("record")}
+        >
+          Record Check
+        </button>
 
-        <button type="button">History</button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("history")}
+        >
+          History
+        </button>
 
-        <button type="button">Residents</button>
+        <button
+          type="button"
+          onClick={() => setActiveSection("residents")}
+        >
+          Residents
+        </button>
       </nav>
 
-      {/* Form used to add a new resident. */}
-      <ResidentForm />
+      {/* Display the dashboard when Dashboard is selected. */}
+      {activeSection === "dashboard" && (
+        <section>
+          <h2>Dashboard</h2>
 
-      {/* Daily sheet used for recording multiple wellness checks. */}
-      <DailyWellnessSheet />
+          <p>
+            Welcome to the Shelter Wellness Check Management
+            System.
+          </p>
 
-      {/* Form used to record an individual wellness check. */}
-      <WellnessCheckForm />
+          <p>
+            Use the navigation above to manage residents and
+            wellness checks.
+          </p>
+        </section>
+      )}
 
-      {/* Displays previously recorded wellness checks. */}
-      <WellnessCheckList />
+      {/* Display the daily wellness sheet. */}
+      {activeSection === "daily" && <DailyWellnessSheet />}
 
-      {/* Displays the current resident list. */}
-      <ResidentList />
+      {/* Display the individual wellness check form. */}
+      {activeSection === "record" && <WellnessCheckForm />}
+
+      {/* Display wellness check history. */}
+      {activeSection === "history" && <WellnessCheckList />}
+
+      {/* 
+        Resident management contains both the form for adding
+        residents and the existing resident list.
+      */}
+      {activeSection === "residents" && (
+        <>
+          <ResidentForm />
+          <ResidentList />
+        </>
+      )}
     </main>
   );
 }
