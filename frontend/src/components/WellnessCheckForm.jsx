@@ -9,6 +9,7 @@ function WellnessCheckForm() {
   const [formData, setFormData] = useState({
     resident: "",
     status: "Present",
+    nsrPresence: "Not Recorded",
     adultsPresent: 0,
     childrenPresent: 0,
     comments: "",
@@ -82,6 +83,7 @@ function WellnessCheckForm() {
       setFormData({
         resident: "",
         status: "Present",
+        nsrPresence: "Not Recorded",
         adultsPresent: 0,
         childrenPresent: 0,
         comments: "",
@@ -118,7 +120,7 @@ function WellnessCheckForm() {
         </div>
 
         <div>
-          <label htmlFor="status">Status:</label>
+          <label htmlFor="status">Wellness Status:</label>
 
           <select
             id="status"
@@ -127,6 +129,22 @@ function WellnessCheckForm() {
             onChange={handleChange}
             required
           >
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Partial">Partial</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="nsrPresence">NSR Presence:</label>
+
+          <select
+            id="nsrPresence"
+            name="nsrPresence"
+            value={formData.nsrPresence}
+            onChange={handleChange}
+          >
+            <option value="Not Recorded">Not Recorded</option>
             <option value="Present">Present</option>
             <option value="Absent">Absent</option>
             <option value="Partial">Partial</option>

@@ -7,16 +7,13 @@ function DailyWellnessSheet() {
   const [residents, setResidents] = useState([]);
 
   // Store the daily wellness values for each resident.
-  const [dailyChecks, setDailyChecks] =
-    useState({});
+  const [dailyChecks, setDailyChecks] = useState({});
 
   // Store the staff member completing the sheet.
-  const [staffName, setStaffName] =
-    useState("");
+  const [staffName, setStaffName] = useState("");
 
   // Store text used to search residents.
-  const [searchTerm, setSearchTerm] =
-    useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Store wellness check date.
   const [checkDate, setCheckDate] = useState(
@@ -24,16 +21,13 @@ function DailyWellnessSheet() {
   );
 
   // Store success or error messages.
-  const [message, setMessage] =
-    useState("");
+  const [message, setMessage] = useState("");
 
   // Track whether the sheet is saving.
-  const [saving, setSaving] =
-    useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Store resident loading errors.
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   // Retrieve residents from the backend.
   useEffect(() => {
@@ -53,11 +47,17 @@ function DailyWellnessSheet() {
 
         setResidents(data);
 
+        // Create one daily wellness row for each resident.
         const initialChecks = {};
 
         data.forEach((resident) => {
           initialChecks[resident._id] = {
             status: "Present",
+
+            // Default NSR to Not Recorded so staff
+            // can explicitly select the NSR result.
+            nsrPresence: "Not Recorded",
+
             adultsPresent: 0,
             childrenPresent: 0,
             comments: "",
@@ -81,6 +81,7 @@ function DailyWellnessSheet() {
   ) {
     setDailyChecks((currentChecks) => ({
       ...currentChecks,
+
       [residentId]: {
         ...currentChecks[residentId],
         [field]: value,
@@ -147,6 +148,7 @@ function DailyWellnessSheet() {
 
   // Save all wellness-check rows.
   async function handleSaveDailyChecks() {
+    // Require the staff member's name.
     if (!staffName.trim()) {
       setMessage(
         "Please enter the staff name before saving."
@@ -154,6 +156,7 @@ function DailyWellnessSheet() {
       return;
     }
 
+    // Require a wellness check date.
     if (!checkDate) {
       setMessage(
         "Please select a wellness check date."
@@ -161,6 +164,7 @@ function DailyWellnessSheet() {
       return;
     }
 
+    // Make sure residents exist before saving.
     if (residents.length === 0) {
       setMessage(
         "There are no resident wellness checks to save."
@@ -188,6 +192,7 @@ function DailyWellnessSheet() {
         check.childrenPresent
       );
 
+      // Present counts cannot be negative.
       if (
         adultsPresent < 0 ||
         childrenPresent < 0
@@ -201,6 +206,8 @@ function DailyWellnessSheet() {
       const totalPresent =
         adultsPresent + childrenPresent;
 
+      // The total present cannot exceed
+      // the recorded family size.
       if (
         totalPresent >
         resident.familySize
@@ -216,6 +223,7 @@ function DailyWellnessSheet() {
       setSaving(true);
       setMessage("");
 
+      // Create one POST request for each resident.
       const requests = residents.map(
         (resident) => {
           const check =
@@ -235,6 +243,11 @@ function DailyWellnessSheet() {
                 resident: resident._id,
 
                 status: check.status,
+
+                // Save the NSR result with
+                // this wellness-check record.
+                nsrPresence:
+                  check.nsrPresence,
 
                 adultsPresent: Number(
                   check.adultsPresent
@@ -258,9 +271,11 @@ function DailyWellnessSheet() {
         }
       );
 
+      // Wait for all resident checks to save.
       const responses =
         await Promise.all(requests);
 
+      // Find any failed request.
       const failedResponse =
         responses.find(
           (response) => !response.ok
@@ -276,11 +291,13 @@ function DailyWellnessSheet() {
         `${residents.length} wellness check(s) saved successfully.`
       );
 
+      // Reset the daily sheet after saving.
       const resetChecks = {};
 
       residents.forEach((resident) => {
         resetChecks[resident._id] = {
           status: "Present",
+          nsrPresence: "Not Recorded",
           adultsPresent: 0,
           childrenPresent: 0,
           comments: "",
@@ -356,6 +373,7 @@ function DailyWellnessSheet() {
         />
       </div>
 
+      {/* Live wellness status summary. */}
       <div className="daily-summary">
         <div>
           <strong>
@@ -417,7 +435,13 @@ function DailyWellnessSheet() {
                   Family Composition
                 </th>
 
-                <th>Status</th>
+                <th>
+                  Wellness Status
+                </th>
+
+                <th>
+                  NSR Presence
+                </th>
 
                 <th>
                   Adults Present
@@ -490,6 +514,40 @@ function DailyWellnessSheet() {
                             )
                           }
                         >
+                          <option value="Present">
+                            Present
+                          </option>
+
+                          <option value="Absent">
+                            Absent
+                          </option>
+
+                          <option value="Partial">
+                            Partial
+                          </option>
+                        </select>
+                      </td>
+
+                      <td>
+                        <select
+                          value={
+                            check.nsrPresence
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            handleRowChange(
+                              resident._id,
+                              "nsrPresence",
+                              event.target
+                                .value
+                            )
+                          }
+                        >
+                          <option value="Not Recorded">
+                            Not Recorded
+                          </option>
+
                           <option value="Present">
                             Present
                           </option>

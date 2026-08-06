@@ -20,10 +20,13 @@ function WellnessCheckList() {
         );
 
         if (!response.ok) {
-          throw new Error("Unable to retrieve wellness checks.");
+          throw new Error(
+            "Unable to retrieve wellness checks."
+          );
         }
 
         const data = await response.json();
+
         setChecks(data);
       } catch (error) {
         setError(error.message);
@@ -58,15 +61,30 @@ function WellnessCheckList() {
               <strong>
                 Unit {check.resident?.unitNumber || "N/A"}
               </strong>
+
               {" - "}
-              {check.resident?.clientName || "Unknown Resident"}
+
+              {check.resident?.clientName ||
+                "Unknown Resident"}
+
               {" - "}
-              Status: {check.status}
+
+              Wellness Status: {check.status}
+
               {" - "}
+
+              NSR: {check.nsrPresence || "Not Recorded"}
+
+              {" - "}
+
               Adults: {check.adultsPresent}
+
               {" - "}
+
               Children: {check.childrenPresent}
+
               {" - "}
+
               Staff: {check.staffName}
             </li>
           ))}

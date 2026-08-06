@@ -17,21 +17,35 @@ const wellnessCheckSchema = new mongoose.Schema(
       default: Date.now,
     },
 
-    // Record whether the resident/family was present.
+    // Record whether the resident/family was present
+    // during the wellness check.
     status: {
       type: String,
       enum: ["Present", "Absent", "Partial"],
       required: true,
     },
 
-    // Number of adults present during the check.
+    // Record whether the resident/family was present
+    // during the NSR check.
+    nsrPresence: {
+      type: String,
+      enum: [
+        "Present",
+        "Absent",
+        "Partial",
+        "Not Recorded",
+      ],
+      default: "Not Recorded",
+    },
+
+    // Number of adults present during the wellness check.
     adultsPresent: {
       type: Number,
       default: 0,
       min: 0,
     },
 
-    // Number of children present during the check.
+    // Number of children present during the wellness check.
     childrenPresent: {
       type: Number,
       default: 0,
