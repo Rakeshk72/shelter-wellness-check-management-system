@@ -62,7 +62,64 @@ router.get("/:id", async (req, res) => {
 // Create a new wellness check record.
 router.post("/", async (req, res) => {
   try {
-    const wellnessCheck = await WellnessCheck.create(req.body);
+    const {
+      resident,
+      checkRound,
+      checkDateTime,
+    } = req.body;
+
+    // Prevent duplicate scheduled wellness checks.
+    //
+    // A duplicate means:
+    // same resident
+    // + same calendar date
+    // + same scheduled check round.
+    //
+    // "Not Recorded" is excluded because the individual
+    // wellness-check form may be used for unscheduled checks.
+    if (
+      resident &&
+      checkRound &&
+      checkRound !== "Not Recorded"
+    ) {
+      // Use the submitted check date when available.
+      // Otherwise use the current date.
+      const submittedDate = checkDateTime
+        ? new Date(checkDateTime)
+        : new Date();
+
+      // Create the beginning of the selected day.
+      const startOfDay = new Date(submittedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      // Create the beginning of the following day.
+      const endOfDay = new Date(startOfDay);
+      endOfDay.setDate(endOfDay.getDate() + 1);
+
+      // Look for an existing wellness check for the same
+      // resident, date, and scheduled round.
+      const existingCheck = await WellnessCheck.findOne({
+        resident,
+        checkRound,
+        checkDateTime: {
+          $gte: startOfDay,
+          $lt: endOfDay,
+        },
+      });
+
+      // Stop the request if this round was already recorded.
+      if (existingCheck) {
+        return res.status(409).json({
+          message:
+            "A wellness check already exists for this resident, date, and check round.",
+        });
+      }
+    }
+
+    // Create the wellness check after duplicate validation passes.
+    const wellnessCheck = await WellnessCheck.create(
+      req.body
+    );
 
     // Populate resident information before returning
     // the newly created wellness check.
@@ -81,14 +138,15 @@ router.post("/", async (req, res) => {
 // Update an existing wellness check by its MongoDB ID.
 router.put("/:id", async (req, res) => {
   try {
-    const wellnessCheck = await WellnessCheck.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        returnDocument: "after",
-        runValidators: true,
-      }
-    );
+    const wellnessCheck =
+      await WellnessCheck.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          returnDocument: "after",
+          runValidators: true,
+        }
+      );
 
     if (!wellnessCheck) {
       return res.status(404).json({
@@ -113,9 +171,10 @@ router.put("/:id", async (req, res) => {
 // Delete a wellness check by its MongoDB ID.
 router.delete("/:id", async (req, res) => {
   try {
-    const wellnessCheck = await WellnessCheck.findByIdAndDelete(
-      req.params.id
-    );
+    const wellnessCheck =
+      await WellnessCheck.findByIdAndDelete(
+        req.params.id
+      );
 
     if (!wellnessCheck) {
       return res.status(404).json({
@@ -124,7 +183,8 @@ router.delete("/:id", async (req, res) => {
     }
 
     res.status(200).json({
-      message: "Wellness check deleted successfully",
+      message:
+        "Wellness check deleted successfully",
       wellnessCheck,
     });
   } catch (error) {
