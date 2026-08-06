@@ -26,9 +26,9 @@ router.get("/", async (req, res) => {
 // Retrieve one wellness check by its MongoDB ID.
 router.get("/:id", async (req, res) => {
   try {
-    const wellnessCheck = await WellnessCheck.findById(req.params.id).populate(
-      "resident"
-    );
+    const wellnessCheck = await WellnessCheck.findById(
+      req.params.id
+    ).populate("resident");
 
     if (!wellnessCheck) {
       return res.status(404).json({
@@ -50,6 +50,10 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const wellnessCheck = await WellnessCheck.create(req.body);
+
+    // Populate resident information before returning
+    // the newly created wellness check.
+    await wellnessCheck.populate("resident");
 
     res.status(201).json(wellnessCheck);
   } catch (error) {
@@ -79,6 +83,10 @@ router.put("/:id", async (req, res) => {
       });
     }
 
+    // Populate resident information so the updated
+    // wellness check returns complete resident details.
+    await wellnessCheck.populate("resident");
+
     res.status(200).json(wellnessCheck);
   } catch (error) {
     res.status(400).json({
@@ -92,7 +100,9 @@ router.put("/:id", async (req, res) => {
 // Delete a wellness check by its MongoDB ID.
 router.delete("/:id", async (req, res) => {
   try {
-    const wellnessCheck = await WellnessCheck.findByIdAndDelete(req.params.id);
+    const wellnessCheck = await WellnessCheck.findByIdAndDelete(
+      req.params.id
+    );
 
     if (!wellnessCheck) {
       return res.status(404).json({
