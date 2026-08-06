@@ -123,6 +123,11 @@ function WellnessCheckList() {
 
               {" - "}
 
+              Check Round:{" "}
+              {check.checkRound || "Not Recorded"}
+
+              {" - "}
+
               Wellness Status: {check.status}
 
               {" - "}

@@ -20,6 +20,9 @@ function DailyWellnessSheet() {
     new Date().toISOString().split("T")[0]
   );
 
+  // Store which scheduled wellness-check round is being completed.
+  const [checkRound, setCheckRound] = useState("");
+
   // Store success or error messages.
   const [message, setMessage] = useState("");
 
@@ -53,11 +56,7 @@ function DailyWellnessSheet() {
         data.forEach((resident) => {
           initialChecks[resident._id] = {
             status: "Present",
-
-            // Default NSR to Not Recorded so staff
-            // can explicitly select the NSR result.
             nsrPresence: "Not Recorded",
-
             adultsPresent: 0,
             childrenPresent: 0,
             comments: "",
@@ -81,7 +80,6 @@ function DailyWellnessSheet() {
   ) {
     setDailyChecks((currentChecks) => ({
       ...currentChecks,
-
       [residentId]: {
         ...currentChecks[residentId],
         [field]: value,
@@ -164,6 +162,14 @@ function DailyWellnessSheet() {
       return;
     }
 
+    // Require the scheduled wellness-check round.
+    if (!checkRound) {
+      setMessage(
+        "Please select a check round before saving."
+      );
+      return;
+    }
+
     // Make sure residents exist before saving.
     if (residents.length === 0) {
       setMessage(
@@ -206,8 +212,7 @@ function DailyWellnessSheet() {
       const totalPresent =
         adultsPresent + childrenPresent;
 
-      // The total present cannot exceed
-      // the recorded family size.
+      // Present household members cannot exceed family size.
       if (
         totalPresent >
         resident.familySize
@@ -223,7 +228,7 @@ function DailyWellnessSheet() {
       setSaving(true);
       setMessage("");
 
-      // Create one POST request for each resident.
+      // Create one POST request for every resident.
       const requests = residents.map(
         (resident) => {
           const check =
@@ -242,10 +247,12 @@ function DailyWellnessSheet() {
               body: JSON.stringify({
                 resident: resident._id,
 
+                // Save the selected round with
+                // every wellness check.
+                checkRound,
+
                 status: check.status,
 
-                // Save the NSR result with
-                // this wellness-check record.
                 nsrPresence:
                   check.nsrPresence,
 
@@ -288,7 +295,7 @@ function DailyWellnessSheet() {
       }
 
       setMessage(
-        `${residents.length} wellness check(s) saved successfully.`
+        `${residents.length} wellness check(s) saved successfully for ${checkRound}.`
       );
 
       // Reset the daily sheet after saving.
@@ -305,8 +312,12 @@ function DailyWellnessSheet() {
       });
 
       setDailyChecks(resetChecks);
+
+      // Clear the staff name, search, and round
+      // after a successful submission.
       setStaffName("");
       setSearchTerm("");
+      setCheckRound("");
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -353,6 +364,55 @@ function DailyWellnessSheet() {
             )
           }
         />
+      </div>
+
+      <div>
+        <label htmlFor="checkRound">
+          Check Round:
+        </label>
+
+        <select
+          id="checkRound"
+          value={checkRound}
+          onChange={(event) =>
+            setCheckRound(
+              event.target.value
+            )
+          }
+          required
+        >
+          <option value="">
+            Select Check Round
+          </option>
+
+          <option value="Overnight Check">
+            Overnight Check
+          </option>
+
+          <option value="8AM-4PM Round 1">
+            8AM-4PM — Round 1
+          </option>
+
+          <option value="8AM-4PM Round 2">
+            8AM-4PM — Round 2
+          </option>
+
+          <option value="8AM-4PM Round 3">
+            8AM-4PM — Round 3
+          </option>
+
+          <option value="4PM-12AM Round 1">
+            4PM-12AM — Round 1
+          </option>
+
+          <option value="4PM-12AM Round 2">
+            4PM-12AM — Round 2
+          </option>
+
+          <option value="4PM-12AM Round 3">
+            4PM-12AM — Round 3
+          </option>
+        </select>
       </div>
 
       <div>

@@ -12,9 +12,27 @@ const wellnessCheckSchema = new mongoose.Schema(
     },
 
     // Date and time when the wellness check was completed.
+    // The backend automatically records this if no date is supplied.
     checkDateTime: {
       type: Date,
       default: Date.now,
+    },
+
+    // Identify which scheduled wellness-check round
+    // this record belongs to.
+    checkRound: {
+      type: String,
+      enum: [
+        "Overnight Check",
+        "8AM-4PM Round 1",
+        "8AM-4PM Round 2",
+        "8AM-4PM Round 3",
+        "4PM-12AM Round 1",
+        "4PM-12AM Round 2",
+        "4PM-12AM Round 3",
+        "Not Recorded",
+      ],
+      default: "Not Recorded",
     },
 
     // Record whether the resident/family was present
