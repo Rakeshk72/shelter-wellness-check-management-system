@@ -9,9 +9,12 @@ const router = express.Router();
 
 // GET /api/wellness-checks
 // Retrieve all wellness checks from MongoDB.
+// Display the newest wellness checks first.
 router.get("/", async (req, res) => {
   try {
-    const checks = await WellnessCheck.find().populate("resident");
+    const checks = await WellnessCheck.find()
+      .populate("resident")
+      .sort({ checkDateTime: -1 });
 
     res.status(200).json(checks);
   } catch (error) {
