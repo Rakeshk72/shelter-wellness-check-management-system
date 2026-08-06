@@ -391,10 +391,26 @@ function DailyWellnessSheet() {
           (response) => !response.ok
         );
 
+      // If a request failed, read the backend response
+      // so staff can see the exact reason.
       if (failedResponse) {
-        throw new Error(
-          "One or more wellness checks could not be saved."
-        );
+        let errorMessage =
+          "One or more wellness checks could not be saved.";
+
+        try {
+          const errorData =
+            await failedResponse.json();
+
+          if (errorData.message) {
+            errorMessage =
+              errorData.message;
+          }
+        } catch {
+          // Keep the general error message if the
+          // backend response cannot be read.
+        }
+
+        throw new Error(errorMessage);
       }
 
       setMessage(
