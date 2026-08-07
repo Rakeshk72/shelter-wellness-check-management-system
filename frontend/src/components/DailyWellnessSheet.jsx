@@ -2,8 +2,6 @@
 // resident information when the component first appears.
 import { useEffect, useState } from "react";
 
-import WellnessSummary from "./dailyWellness/WellnessSummary.jsx";
-
 function DailyWellnessSheet() {
   // Store all residents retrieved from MongoDB.
   const [residents, setResidents] = useState([]);
