@@ -159,7 +159,9 @@ function DailyWellnessSheet() {
   // Apply the default staff name to every resident
   // currently displayed in the assigned unit range.
   function handleApplyDefaultStaff() {
-    if (!defaultStaffName.trim()) {
+    const staffName = defaultStaffName.trim();
+
+    if (!staffName) {
       setMessage(
         "Please enter a default staff name first."
       );
@@ -173,15 +175,26 @@ function DailyWellnessSheet() {
       return;
     }
 
+    // Update every currently displayed resident row in one state update.
+    // If a row is unexpectedly missing, recreate its default values first.
     setDailyChecks((currentChecks) => {
       const updatedChecks = {
         ...currentChecks,
       };
 
       filteredResidents.forEach((resident) => {
+        const currentRow = updatedChecks[resident._id] || {
+          status: "Present",
+          nsrPresence: "Not Recorded",
+          adultsPresent: 0,
+          childrenPresent: 0,
+          comments: "",
+          staffName: "",
+        };
+
         updatedChecks[resident._id] = {
-          ...updatedChecks[resident._id],
-          staffName: defaultStaffName.trim(),
+          ...currentRow,
+          staffName,
         };
       });
 
@@ -257,37 +270,6 @@ function DailyWellnessSheet() {
       `${filteredResidents.length} assigned resident row(s) reset.`
     );
   }
-
-  // Calculate the live summary only for the
-  // residents currently displayed/assigned.
-  const dailySummary = filteredResidents.reduce(
-    (summary, resident) => {
-      const check =
-        dailyChecks[resident._id];
-
-      summary.total += 1;
-
-      if (check?.status === "Present") {
-        summary.present += 1;
-      }
-
-      if (check?.status === "Absent") {
-        summary.absent += 1;
-      }
-
-      if (check?.status === "Partial") {
-        summary.partial += 1;
-      }
-
-      return summary;
-    },
-    {
-      total: 0,
-      present: 0,
-      absent: 0,
-      partial: 0,
-    }
-  );
 
   // Save only the wellness-check rows currently displayed.
   async function handleSaveDailyChecks() {
@@ -689,8 +671,8 @@ function DailyWellnessSheet() {
         </button>
       </div>
 
-      {/* Live status summary for currently displayed residents. */}
-      <WellnessSummary summary={dailySummary} />
+      
+  
 
       {error && <p>{error}</p>}
 
