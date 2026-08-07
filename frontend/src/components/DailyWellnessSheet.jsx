@@ -2,6 +2,8 @@
 // resident information when the component first appears.
 import { useEffect, useState } from "react";
 
+import WellnessSummary from "./dailyWellness/WellnessSummary.jsx";
+
 function DailyWellnessSheet() {
   // Store all residents retrieved from MongoDB.
   const [residents, setResidents] = useState([]);
@@ -690,41 +692,7 @@ function DailyWellnessSheet() {
       </div>
 
       {/* Live status summary for currently displayed residents. */}
-      <div className="daily-summary">
-        <div>
-          <strong>
-            Assigned Residents
-          </strong>
-
-          <span>
-            {dailySummary.total}
-          </span>
-        </div>
-
-        <div>
-          <strong>Present</strong>
-
-          <span>
-            {dailySummary.present}
-          </span>
-        </div>
-
-        <div>
-          <strong>Absent</strong>
-
-          <span>
-            {dailySummary.absent}
-          </span>
-        </div>
-
-        <div>
-          <strong>Partial</strong>
-
-          <span>
-            {dailySummary.partial}
-          </span>
-        </div>
-      </div>
+      <WellnessSummary summary={dailySummary} />
 
       {error && <p>{error}</p>}
 
