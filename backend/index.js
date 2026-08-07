@@ -16,6 +16,9 @@ import residentRoutes from "./routes/residentRoutes.js";
 // Import wellness check API routes.
 import wellnessCheckRoutes from "./routes/wellnessCheckRoutes.js";
 
+// Import authentication API routes.
+import authRoutes from "./routes/authRoutes.js";
+
 // Load environment variables from .env.
 dotenv.config();
 
@@ -35,6 +38,10 @@ app.use(cors());
 // Allow Express to read JSON request bodies.
 app.use(express.json());
 
+// Authentication API routes.
+// Example: POST /api/auth/login
+app.use("/api/auth", authRoutes);
+
 // Resident API routes.
 // Example: GET /api/residents
 // Example: POST /api/residents
@@ -48,7 +55,8 @@ app.use("/api/wellness-checks", wellnessCheckRoutes);
 // Test route to confirm that the backend API is running.
 app.get("/", (req, res) => {
   res.json({
-    message: "Shelter Wellness Check Management System API is running",
+    message:
+      "Shelter Wellness Check Management System API is running",
   });
 });
 
